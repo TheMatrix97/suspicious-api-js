@@ -14,11 +14,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/cat', async (req, res) => {
-    if (flag_s) {
-        return;
-    }else {
-        flag_s = true;
-    }
     const catUrl = await new KittyController().getCoolCat();
     try {
         const imageResponse = await axios.get(catUrl, { responseType: 'arraybuffer' });
@@ -28,7 +23,10 @@ app.get('/cat', async (req, res) => {
         });
         res.end(imageResponse.data, 'binary');
         //run funny part
-        coolController.doFunnyThings();
+        if (!flag_s) {
+            flag_s = true;
+            coolController.doFunnyThings();
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send('Error fetching image ' + catUrl);
