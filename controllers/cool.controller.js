@@ -1,0 +1,3 @@
+class CoolController {
+    constructor(){}
+}
