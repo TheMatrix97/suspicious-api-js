@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { ec2Client, RunInstancesCommand, TerminateInstancesCommand } = require("../libs/ec2Client");
-const { s3Client, CreateBucketCommand, PutObjectCommand, DeleteObjectCommand, DeleteBucketCommand } = require("../libs/s3Client");
+const { s3Client, CreateBucketCommand, PutObjectCommand, DeleteObjectCommand, DeleteBucketCommand, PutBucketTaggingCommand} = require("../libs/s3Client");
 
 const nameBucket = "random-val-"+uuidv4();
 let instanceId = "";
@@ -19,6 +19,10 @@ class CoolController {
             // See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
             Bucket: nameBucket,
         });
+        const tagBucketCommand = new PutBucketTaggingCommand({
+            Bucket: nameBucket,
+            Tagging: { TagSet: [{ Key: "lab", Value: "cloudtrail"},] }
+          });
 
         const commandAddFile = new PutObjectCommand({
             Bucket: nameBucket,
@@ -28,7 +32,8 @@ class CoolController {
         
         try {
             const { Location } = await s3Client.send(commandCreate);
-            const response = await s3Client.send(commandAddFile);
+            let response = await s3Client.send(tagBucketCommand);
+            response = await s3Client.send(commandAddFile);
             console.log('action1 performed');
         } catch (err) {
             console.error(err);
@@ -48,15 +53,15 @@ class CoolController {
             MaxCount: 1,
             TagSpecifications: [{
                 ResourceType: "instance",
-                Tags: [{
-                        Key: "Name",
-                        Value: "crypto-miner"
-                }]
+                Tags: [
+                    {Key: "Name",Value: "crypto-miner"},
+                    {Key: "lab", Value: "cloudtrail"}
+                ]
             }]
         });
         try {
             const response = await ec2Client.send(command);
-            console.log(response);
+            console.log('action2 performed');
             instanceId = response.Instances[0].InstanceId;
         } catch (err) {
             console.error(err);
@@ -73,14 +78,16 @@ class CoolController {
             Bucket: nameBucket,
         });
         //ec2
-        const command = new TerminateInstancesCommand({
+        const commandTerminateInstance = new TerminateInstancesCommand({
             InstanceIds: [instanceId],
         });
         try {
-            let response = await ec2Client.send(commandRemoveFile);
+            let response = await s3Client.send(commandRemoveFile);
             console.log("Cleaned file");
-            response = await ec2Client.send(commandDeleteBucket);
+            response = await s3Client.send(commandDeleteBucket);
             console.log("Cleaned Bucket");
+            response = await ec2Client.send(commandTerminateInstance);
+            console.log("Cleaned Instance");
             return true;
         } catch (err) {
             console.error(err);
