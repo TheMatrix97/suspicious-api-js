@@ -38,7 +38,7 @@ class CoolController {
     async anotherThing(){
         const command = new RunInstancesCommand({
             // Your key pair name.
-            KeyName: "",
+            KeyName: "vockey",
             // An x86_64 compatible image.
             ImageId: "ami-005f9685cb30f234b",
             // An x86_64 compatible free-tier instance type.
