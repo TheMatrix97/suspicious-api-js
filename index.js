@@ -36,10 +36,11 @@ app.get('/cat', async (req, res) => {
 app.get('/enough', async (req, res) => {
     let out = coolController.cleanTheMess();
     if (out){
-        res.status(200).send('Cleaned!')
+        res.status(200).send('Cleaned!');
     }else {
-        res.status(500).send('Oops!')
+        res.status(500).send('Oops!');
     }
+    flag_s = false;
 });
 
 // Start the server
