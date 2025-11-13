@@ -1,6 +1,4 @@
-# syntax=docker/dockerfile:1
-
-FROM node:18-alpine
+FROM node:24.11-alpine
 
 WORKDIR /usr/src/app
 
