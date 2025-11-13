@@ -43,7 +43,7 @@ class CoolController {
     async anotherThing(){
         const command = new RunInstancesCommand({
             // An x86_64 compatible image.
-            ImageId: "ami-005f9685cb30f234b",
+            ImageId: process.env.AMI ?? "ami-005f9685cb30f234b",
             // An x86_64 compatible free-tier instance type.
             InstanceType: "t3.micro",
             // Ensure only 1 instance launches.
